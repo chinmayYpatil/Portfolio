@@ -23,8 +23,16 @@ function App() {
 
     const animate = () => {
       const target = getScrollPercent();
-      progressRef.current += (target - progressRef.current) * 0.07; // More gradual easing
-      setScrollProgress(progressRef.current);
+      progressRef.current += (target - progressRef.current) * 0.08;
+      if (Math.abs(target - progressRef.current) < 0.1) {
+        progressRef.current = target;
+      }
+      setScrollProgress(prev => {
+        if (Math.abs(prev - progressRef.current) > 0.1) {
+          return progressRef.current;
+        }
+        return prev;
+      });
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
@@ -40,10 +48,15 @@ function App() {
     <div className="min-h-screen bg-gray-900">
       {/* Scroll Progress Bar */}
       <div className="fixed bottom-0 left-0 w-full z-50 pointer-events-none">
-        <div className="w-full h-5 bg-transparent relative">
+        <div className="w-full h-5 bg-transparent relative overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-green-400 via-teal-400 to-cyan-400 transition-all duration-300 ease-out flex items-center justify-center relative"
-            style={{ width: `${scrollProgress}%` }}
+            className="h-full bg-gradient-to-r from-green-400 via-teal-400 to-cyan-400 transition-transform duration-300 ease-out flex items-center justify-center relative rounded-r-full"
+            style={{
+              transform: `scaleX(${scrollProgress / 100})`,
+              transformOrigin: 'left',
+              willChange: 'transform',
+              boxShadow: scrollProgress > 0 ? '0 0 16px 4px rgba(34,211,238,0.4), 0 0 32px 8px rgba(16,185,129,0.2)' : 'none',
+            }}
           >
             <span className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs text-white font-semibold select-none pointer-events-none drop-shadow">
               {Math.round(scrollProgress)}%
